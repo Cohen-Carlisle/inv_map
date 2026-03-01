@@ -3,16 +3,18 @@ defmodule InvMap do
   Documentation for `InvMap`.
   """
 
+  defstruct forward: %{}, inverse: %{}
+
   @doc """
-  Hello world.
+  Returns a new empty InvMap.
 
   ## Examples
 
-      iex> InvMap.hello()
-      :world
+      iex> InvMap.new()
+      %InvMap{forward: %{}, inverse: %{}}
 
   """
-  def hello do
-    :world
+  def new do
+    %InvMap{}
   end
 end
