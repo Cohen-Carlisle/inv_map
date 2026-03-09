@@ -8,6 +8,26 @@ defmodule InvMapTest do
     end
   end
 
+  describe "new/1" do
+    test "creates an InvMap from an enumerable" do
+      expected = %InvMap{forward: %{:a => 1, :b => 2}, inverse: %{1 => :a, 2 => :b}}
+      assert InvMap.new(%{a: 1, b: 2}) == expected
+      assert InvMap.new([{:a, 1}, {:b, 2}]) == expected
+      assert InvMap.new(MapSet.new(a: 1, b: 2)) == expected
+    end
+
+    # TODO: make InvMap enumerable
+    test "creates an InvMap from an InvMap" do
+      expected = %InvMap{forward: %{:a => 1, :b => 2}, inverse: %{1 => :a, 2 => :b}}
+      assert InvMap.new(expected) == expected
+    end
+
+    test "the last key in wins" do
+      expected = %InvMap{forward: %{:a => 3}, inverse: %{3 => :a}}
+      assert InvMap.new(a: 1, a: 2, a: 3) == expected
+    end
+  end
+
   describe "put/3" do
     test "puts the key value pair in inv_map" do
       assert InvMap.put(InvMap.new(), :a, 1) == %InvMap{forward: %{:a => 1}, inverse: %{1 => :a}}

@@ -14,8 +14,32 @@ defmodule InvMap do
       %InvMap{forward: %{}, inverse: %{}}
 
   """
-  def new do
-    %InvMap{}
+  def new, do: %InvMap{}
+
+  @doc """
+  Creates an InvMap from an `enumerable`.
+
+  Duplicated keys are removed; the latest one prevails.
+
+  ## Examples
+
+      iex> InvMap.new(%{b: 1, a: 2})
+      %InvMap{forward: %{:b => 1, :a => 2}, inverse: %{1 => :b, 2 => :a}}
+      iex> InvMap.new(a: 1, a: 2, a: 3)
+      %InvMap{forward: %{:a => 3}, inverse: %{3 => :a}}
+
+  """
+  def new(enumerable)
+  def new(%InvMap{} = inv_map), do: inv_map
+
+  def new(enumerable) do
+    enumerable
+    |> Map.new()
+    |> new_from_map()
+  end
+
+  defp new_from_map(map) do
+    %InvMap{forward: map, inverse: Map.new(map, fn {k, v} -> {v, k} end)}
   end
 
   @doc """
