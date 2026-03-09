@@ -43,6 +43,28 @@ defmodule InvMap do
   end
 
   @doc """
+  Creates an InvMap from an `enumerable` via the given transformation function.
+
+  Duplicated keys are removed; the latest one prevails.
+
+  ## Examples
+
+      iex> InvMap.new([1, 2], fn x -> {x, 100 * x + 1} end)
+      %InvMap{forward: %{1 => 101, 2 => 201}, inverse: %{101 => 1, 201 => 2}}
+      iex> InvMap.new(%{a: 2, b: 3, c: 4}, fn {key, val} -> {key, val * 2} end)
+      %InvMap{forward: %{:a => 4, :b => 6, :c => 8}, inverse: %{4 => :a, 6 => :b, 8 => :c}}
+
+  """
+  def new(enumerable, transform)
+  def new(%InvMap{forward: forward}, transform), do: new(forward, transform)
+
+  def new(enumerable, transform) do
+    enumerable
+    |> Map.new(transform)
+    |> new_from_map()
+  end
+
+  @doc """
   Puts the given `value` under `key` in `inv_map`.
 
   ## Examples
