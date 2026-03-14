@@ -98,4 +98,49 @@ defmodule InvMap do
     # TODO: rewrite like https://github.com/elixir-lang/elixir/blob/v1.19.5/lib/elixir/lib/map.ex#L532 ?
     Map.get_lazy(forward, key, fn -> Map.get(inverse, key, default) end)
   end
+
+  @doc """
+  Deletes the entry in `inv_map` for a specific `key`.
+
+  If the `key` does not exist, returns `inv_map` unchanged.
+
+  ## Examples
+
+      iex> InvMap.delete(InvMap.new(a: 1, b: 2), :a)
+      %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+      iex> InvMap.delete(InvMap.new(a: 1, b: 2), 1)
+      %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+      iex> InvMap.delete(InvMap.new(b: 2), :a)
+      %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+  """
+  def delete(%InvMap{forward: forward, inverse: inverse} = inv_map, key) do
+    cond do
+      Map.has_key?(forward, key) ->
+        value = Map.get(forward, key)
+        %InvMap{forward: Map.delete(forward, key), inverse: Map.delete(inverse, value)}
+
+      Map.has_key?(inverse, key) ->
+        value = Map.get(inverse, key)
+        %InvMap{forward: Map.delete(forward, value), inverse: Map.delete(inverse, key)}
+
+      true ->
+        inv_map
+    end
+  end
+
+  @doc """
+  Returns whether the given `key` exists in the given `inv_map`.
+
+  ## Examples
+
+      iex> InvMap.has_key?(InvMap.new(a: 1), :a)
+      true
+      iex> InvMap.has_key?(InvMap.new(a: 1), 1)
+      true
+      iex> InvMap.has_key?(InvMap.new(a: 1), :b)
+      false
+  """
+  def has_key?(%InvMap{forward: forward, inverse: inverse}, key) do
+    Map.has_key?(forward, key) || Map.has_key?(inverse, key)
+  end
 end

@@ -64,4 +64,35 @@ defmodule InvMapTest do
       assert InvMap.get(inv_map, :no, :yes) == :yes
     end
   end
+
+  describe "delete/2" do
+    test "deletes the entry from the forward map" do
+      inv_map = InvMap.new(a: 1, b: 2)
+      assert InvMap.delete(inv_map, :a) == %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+    end
+
+    test "deletes the entry from the inverse map" do
+      inv_map = InvMap.new(a: 1, b: 2)
+      assert InvMap.delete(inv_map, 1) == %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+    end
+
+    test "returns inv_map unchanged if the key does not exist" do
+      inv_map = InvMap.new(b: 2)
+      assert InvMap.delete(inv_map, :a) == %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+    end
+  end
+
+  describe "has_key?/2" do
+    test "returns true if the key is present in the forward map" do
+      assert InvMap.has_key?(InvMap.new(a: 1), :a) == true
+    end
+
+    test "returns true if the key is present in the inverse map" do
+      assert InvMap.has_key?(InvMap.new(a: 1), 1) == true
+    end
+
+    test "returns false if the key is not present" do
+      assert InvMap.has_key?(InvMap.new(a: 1), :b) == false
+    end
+  end
 end
