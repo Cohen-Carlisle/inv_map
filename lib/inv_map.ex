@@ -11,8 +11,7 @@ defmodule InvMap do
   ## Examples
 
       iex> InvMap.new()
-      %InvMap{forward: %{}, inverse: %{}}
-
+      InvMap.new(%{})
   """
   def new, do: %InvMap{}
 
@@ -24,10 +23,9 @@ defmodule InvMap do
   ## Examples
 
       iex> InvMap.new(%{b: 1, a: 2})
-      %InvMap{forward: %{:b => 1, :a => 2}, inverse: %{1 => :b, 2 => :a}}
+      InvMap.new(%{a: 2, b: 1})
       iex> InvMap.new(a: 1, a: 2, a: 3)
-      %InvMap{forward: %{:a => 3}, inverse: %{3 => :a}}
-
+      InvMap.new(%{a: 3})
   """
   def new(enumerable)
   def new(%InvMap{} = inv_map), do: inv_map
@@ -50,10 +48,9 @@ defmodule InvMap do
   ## Examples
 
       iex> InvMap.new([1, 2], fn x -> {x, 100 * x + 1} end)
-      %InvMap{forward: %{1 => 101, 2 => 201}, inverse: %{101 => 1, 201 => 2}}
+      InvMap.new(%{1 => 101, 2 => 201})
       iex> InvMap.new(%{a: 2, b: 3, c: 4}, fn {key, val} -> {key, val * 2} end)
-      %InvMap{forward: %{:a => 4, :b => 6, :c => 8}, inverse: %{4 => :a, 6 => :b, 8 => :c}}
-
+      InvMap.new(%{c: 8, a: 4, b: 6})
   """
   def new(enumerable, transform)
   def new(%InvMap{forward: forward}, transform), do: new(forward, transform)
@@ -70,8 +67,7 @@ defmodule InvMap do
   ## Examples
 
       iex> InvMap.put(InvMap.new(), :a, 1)
-      %InvMap{forward: %{:a => 1}, inverse: %{1 => :a}}
-
+      InvMap.new(%{a: 1})
   """
   def put(%InvMap{forward: forward, inverse: inverse} = inv_map, key, value) do
     # TODO: check for existing keys
@@ -92,7 +88,6 @@ defmodule InvMap do
       nil
       iex> InvMap.get(InvMap.new(), :a, 0)
       0
-
   """
   def get(%InvMap{forward: forward, inverse: inverse}, key, default \\ nil) do
     # TODO: rewrite like https://github.com/elixir-lang/elixir/blob/v1.19.5/lib/elixir/lib/map.ex#L532 ?
@@ -107,11 +102,11 @@ defmodule InvMap do
   ## Examples
 
       iex> InvMap.delete(InvMap.new(a: 1, b: 2), :a)
-      %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+      InvMap.new(%{b: 2})
       iex> InvMap.delete(InvMap.new(a: 1, b: 2), 1)
-      %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+      InvMap.new(%{b: 2})
       iex> InvMap.delete(InvMap.new(b: 2), :a)
-      %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+      InvMap.new(%{b: 2})
   """
   def delete(%InvMap{forward: forward, inverse: inverse} = inv_map, key) do
     cond do
@@ -158,4 +153,14 @@ defmodule InvMap do
       [{1, 2}]
   """
   def to_list(%InvMap{forward: forward}), do: Map.to_list(forward)
+
+  defimpl Inspect do
+    def inspect(%InvMap{forward: forward}, %Inspect.Opts{} = opts) do
+      # TODO: support for safer 1.19+ only inspect based on:
+      # https://github.com/elixir-lang/elixir/blob/v1.19.5/lib/elixir/lib/map_set.ex#L444-L455
+      # {doc, %{limit: limit}} = Inspect.Algebra.to_doc_with_opts(forward, opts)
+      # {Inspect.Algebra.concat(["InvMap.new(", doc, ")"]), %{opts | limit: limit}}
+      Inspect.Algebra.concat(["InvMap.new(", Inspect.Algebra.to_doc(forward, opts), ")"])
+    end
+  end
 end
