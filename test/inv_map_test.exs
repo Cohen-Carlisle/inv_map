@@ -95,4 +95,11 @@ defmodule InvMapTest do
       assert InvMap.has_key?(InvMap.new(a: 1), :b) == false
     end
   end
+
+  describe "to_list/1" do
+    test "returns a list of tuples, one for each entry in the forward map" do
+      assert InvMap.to_list(InvMap.new(%{a: 1})) == [a: 1]
+      assert InvMap.to_list(InvMap.new(%{1 => 2})) == [{1, 2}]
+    end
+  end
 end

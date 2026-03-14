@@ -143,4 +143,19 @@ defmodule InvMap do
   def has_key?(%InvMap{forward: forward, inverse: inverse}, key) do
     Map.has_key?(forward, key) || Map.has_key?(inverse, key)
   end
+
+  @doc """
+  Converts `inv_map` to a list.
+
+  Each entry in the `inv_map` is converted to a two-element tuple
+  `{key, value}` in the resulting list.
+
+  ## Examples
+
+      iex> InvMap.to_list(InvMap.new(%{a: 1}))
+      [a: 1]
+      iex> InvMap.to_list(InvMap.new(%{1 => 2}))
+      [{1, 2}]
+  """
+  def to_list(%InvMap{forward: forward}), do: Map.to_list(forward)
 end
