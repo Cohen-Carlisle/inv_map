@@ -46,7 +46,7 @@ defmodule InvMap do
       iex> InvMap.new([1, 2], fn x -> {x, 100 * x + 1} end)
       InvMap.new(%{1 => 101, 2 => 201})
       iex> InvMap.new(%{a: 2, b: 3, c: 4}, fn {key, val} -> {key, val * 2} end)
-      InvMap.new(%{c: 8, a: 4, b: 6})
+      InvMap.new(%{a: 4, b: 6, c: 8})
   """
   def new(enumerable, transform)
   def new(%InvMap{forward: forward}, transform), do: new(forward, transform)
@@ -100,6 +100,12 @@ defmodule InvMap do
       nil
       iex> InvMap.get(InvMap.new(), :a, 0)
       0
+      iex> InvMap.get(InvMap.new(a: 1), :a)
+      1
+      iex> InvMap.get(InvMap.new(a: 1), 1)
+      :a
+      iex> InvMap.get(InvMap.new(a: nil), :a, 1)
+      nil
   """
   def get(%InvMap{forward: forward, inverse: inverse}, key, default \\ nil) do
     # TODO: rewrite like https://github.com/elixir-lang/elixir/blob/v1.19.5/lib/elixir/lib/map.ex#L532 ?
