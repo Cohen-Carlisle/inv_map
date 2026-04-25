@@ -33,11 +33,23 @@ defmodule InvMap do
   def new(enumerable) do
     enumerable
     |> Map.new()
-    |> new_from_map()
+    |> new_from_map!()
   end
 
-  defp new_from_map(map) do
-    %InvMap{forward: map, inverse: Map.new(map, fn {k, v} -> {v, k} end)}
+  defp new_from_map!(map) do
+    inverse = Map.new(map, fn {k, v} -> {v, k} end)
+    inv_map = %InvMap{forward: map, inverse: inverse}
+    validate_involution_on_get!(inv_map)
+  end
+
+  defp validate_involution_on_get!(%InvMap{forward: forward} = inv_map) do
+    f = fn key -> InvMap.get(inv_map, key) end
+
+    if Enum.all?(Map.keys(forward), fn x -> f.(f.(x)) === x end) do
+      inv_map
+    else
+      raise ArgumentError, "InvMap does not implement an involution on get"
+    end
   end
 
   @doc """
@@ -58,7 +70,7 @@ defmodule InvMap do
   def new(enumerable, transform) do
     enumerable
     |> Map.new(transform)
-    |> new_from_map()
+    |> new_from_map!()
   end
 
   @doc """

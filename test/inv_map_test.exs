@@ -26,6 +26,12 @@ defmodule InvMapTest do
       expected = %InvMap{forward: %{:a => 3}, inverse: %{3 => :a}}
       assert InvMap.new(a: 1, a: 2, a: 3) == expected
     end
+
+    test "raises ArgumentError when enumerable is not self-inverting" do
+      assert_raise ArgumentError, fn -> InvMap.new(%{1 => 2, 2 => 3}) end
+      assert_raise ArgumentError, fn -> InvMap.new(%{a: 1, b: 1}) end
+      assert_raise ArgumentError, fn -> InvMap.new(%{1 => :a, 1.0 => :a}) end
+    end
   end
 
   describe "new/2" do
@@ -45,6 +51,12 @@ defmodule InvMapTest do
     test "the last key in wins" do
       expected = %InvMap{forward: %{:a => 6}, inverse: %{6 => :a}}
       assert InvMap.new([a: 1, a: 2, a: 3], fn {x, y} -> {x, y * 2} end) == expected
+    end
+
+    test "raises ArgumentError when transformed enumerable is not self-inverting" do
+      assert_raise ArgumentError, fn -> InvMap.new([1, 2], &{&1, &1 + 1}) end
+      assert_raise ArgumentError, fn -> InvMap.new([:a, :b], &{&1, 1}) end
+      assert_raise ArgumentError, fn -> InvMap.new([1, 1.0], &{&1, :a}) end
     end
   end
 
