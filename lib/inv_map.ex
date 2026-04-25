@@ -78,12 +78,22 @@ defmodule InvMap do
 
   ## Examples
 
-      iex> InvMap.put(InvMap.new(), :a, 1)
-      InvMap.new(%{a: 1})
+      iex> InvMap.put(InvMap.new(), 1, 1.0)
+      InvMap.new(%{1 => 1.0})
+      iex> InvMap.put(InvMap.new(%{1 => 1.0, 2 => 2.0}), 1, 3.0)
+      InvMap.new(%{1 => 3.0, 2 => 2.0})
+      iex> InvMap.put(InvMap.new(%{1 => 1.0, 2 => 2.0}), 3, 1.0)
+      InvMap.new(%{3 => 1.0, 2 => 2.0})
+      iex> InvMap.put(InvMap.new(%{1 => 1.0, 2 => 2.0}), 1, 2.0)
+      InvMap.new(%{1 => 2.0})
   """
-  def put(%InvMap{forward: forward, inverse: inverse} = inv_map, key, value) do
-    # TODO: check for existing keys
-    %{inv_map | forward: Map.put(forward, key, value), inverse: Map.put(inverse, value, key)}
+  def put(%InvMap{} = inv_map, key, value) do
+    %{forward: forward, inverse: inverse} =
+      inv_map
+      |> InvMap.delete(key)
+      |> InvMap.delete(value)
+
+    %InvMap{forward: Map.put(forward, key, value), inverse: Map.put(inverse, value, key)}
   end
 
   @doc """
