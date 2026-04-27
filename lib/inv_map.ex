@@ -125,6 +125,30 @@ defmodule InvMap do
   end
 
   @doc """
+  Fetches the value for a specific `key` in the given `inv_map`,
+  erroring out if `inv_map` doesn't contain `key`.
+
+  If `inv_map` contains `key`, the corresponding value is returned.
+  If `inv_map` doesn't contain `key`, a `KeyError` exception is raised.
+
+  ## Examples
+
+      iex> InvMap.fetch!(InvMap.new(a: 1), :a)
+      1
+      iex> InvMap.fetch!(InvMap.new(a: 1), 1)
+      :a
+      iex> InvMap.fetch!(InvMap.new(a: 1), :b)
+      ** (KeyError) key :b not found in:...
+  """
+  def fetch!(%InvMap{} = inv_map, key) do
+    # TODO: fully test raise in ...test.exs
+    case fetch(inv_map, key) do
+      {:ok, value} -> value
+      :error -> raise KeyError, key: key, term: inv_map
+    end
+  end
+
+  @doc """
   Gets the valu for the specific `key` in `inv_map`.
 
   if `key` is present in `inv_map` then its value is returned.
