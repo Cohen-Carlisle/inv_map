@@ -97,6 +97,34 @@ defmodule InvMap do
   end
 
   @doc """
+  Fetches the value for a specific `key` in the given `inv_map`.
+
+  If `inv_map` contains the given `key` then its value is returned in the shape of `{:ok, value}`.
+  If `inv_map` doesn't contain `key`, `:error` is returned.
+
+  ## Examples
+
+      iex> InvMap.fetch(InvMap.new(a: 1), :a)
+      {:ok, 1}
+      iex> InvMap.fetch(InvMap.new(a: 1), 1)
+      {:ok, :a}
+      iex> InvMap.fetch(InvMap.new(a: 1), :b)
+      :error
+  """
+  def fetch(%InvMap{} = inv_map, key) do
+    case inv_map do
+      %{forward: %{^key => value}} ->
+        {:ok, value}
+
+      %{inverse: %{^key => value}} ->
+        {:ok, value}
+
+      _ ->
+        :error
+    end
+  end
+
+  @doc """
   Gets the valu for the specific `key` in `inv_map`.
 
   if `key` is present in `inv_map` then its value is returned.
@@ -117,9 +145,11 @@ defmodule InvMap do
       iex> InvMap.get(InvMap.new(a: nil), :a, 1)
       nil
   """
-  def get(%InvMap{forward: forward, inverse: inverse}, key, default \\ nil) do
-    # TODO: rewrite like https://github.com/elixir-lang/elixir/blob/v1.19.5/lib/elixir/lib/map.ex#L532 ?
-    Map.get_lazy(forward, key, fn -> Map.get(inverse, key, default) end)
+  def get(%InvMap{} = inv_map, key, default \\ nil) do
+    case fetch(inv_map, key) do
+      {:ok, value} -> value
+      :error -> default
+    end
   end
 
   @doc """
