@@ -64,7 +64,7 @@ defmodule InvMap do
   end
 
   defp validate_involution_on_get!(%InvMap{forward: forward} = inv_map) do
-    f = fn key -> InvMap.get(inv_map, key) end
+    f = fn key -> get(inv_map, key) end
 
     if Enum.all?(Map.keys(forward), fn x -> f.(f.(x)) === x end) do
       inv_map
@@ -90,8 +90,8 @@ defmodule InvMap do
   def put(%InvMap{} = inv_map, key, value) do
     %{forward: forward, inverse: inverse} =
       inv_map
-      |> InvMap.delete(key)
-      |> InvMap.delete(value)
+      |> delete(key)
+      |> delete(value)
 
     %InvMap{forward: Map.put(forward, key, value), inverse: Map.put(inverse, value, key)}
   end
@@ -150,6 +150,19 @@ defmodule InvMap do
         inv_map
     end
   end
+
+  @doc """
+  Drops the given `keys` from `inv_map`.
+
+  If `keys` contains keys that are not in `inv_map`, they're simply ignored.
+
+  ## Examples
+
+      iex> InvMap.drop(InvMap.new(a: 1, b: 2, c: 3), [:b, 3, :d])
+      InvMap.new(%{a: 1})
+  """
+  def drop(%InvMap{} = inv_map, []), do: inv_map
+  def drop(%InvMap{} = inv_map, [key | rest]), do: drop(delete(inv_map, key), rest)
 
   @doc """
   Returns whether the given `key` exists in the given `inv_map`.
