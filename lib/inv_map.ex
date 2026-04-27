@@ -149,9 +149,9 @@ defmodule InvMap do
   end
 
   @doc """
-  Gets the valu for the specific `key` in `inv_map`.
+  Gets the value for the specific `key` in `inv_map`.
 
-  if `key` is present in `inv_map` then its value is returned.
+  If `key` is present in `inv_map` then its value is returned.
   Otherwise, `default` is returned.
 
   If `default` is not provided, `nil` is used.
