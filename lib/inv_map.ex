@@ -190,17 +190,28 @@ defmodule InvMap do
       iex> InvMap.delete(InvMap.new(b: 2), :a)
       InvMap.new(%{b: 2})
   """
-  def delete(%InvMap{forward: forward, inverse: inverse} = inv_map, key) do
-    cond do
-      Map.has_key?(forward, key) ->
-        value = Map.get(forward, key)
+  def delete(%InvMap{} = inv_map, key) do
+    inv_map
+    |> maybe_delete_by_forward_key(key)
+    |> maybe_delete_by_inverse_key(key)
+  end
+
+  defp maybe_delete_by_forward_key(%{forward: forward} = inv_map, key) do
+    case forward do
+      %{^key => value} ->
+        inverse = inv_map.inverse
         %InvMap{forward: Map.delete(forward, key), inverse: Map.delete(inverse, value)}
+      _ ->
+        inv_map
+    end
+  end
 
-      Map.has_key?(inverse, key) ->
-        value = Map.get(inverse, key)
+  defp maybe_delete_by_inverse_key(%{inverse: inverse} = inv_map, key) do
+    case inverse do
+      %{^key => value} ->
+        forward = inv_map.forward
         %InvMap{forward: Map.delete(forward, value), inverse: Map.delete(inverse, key)}
-
-      true ->
+      _ ->
         inv_map
     end
   end

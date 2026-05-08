@@ -92,6 +92,11 @@ defmodule InvMapTest do
       inv_map = InvMap.new(b: 2)
       assert InvMap.delete(inv_map, :a) == %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
     end
+
+    test "deletes both entries when internal maps contain cyclic entries" do
+      inv_map = InvMap.new(%{1 => 2, 2 => 1, 3 => 4})
+      assert InvMap.delete(inv_map, 1) == %InvMap{forward: %{3 => 4}, inverse: %{4 => 3}}
+    end
   end
 
   describe "has_key?/2" do
