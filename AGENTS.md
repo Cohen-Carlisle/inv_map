@@ -34,6 +34,8 @@ The invariant is enforced in two different ways depending on the entry point:
 
 This split is intentional. Don't move validation into `put/3` or repair into `new/*`.
 
+Additionally, both entry points reject inverse pairs: `{k, v}` and `{v, k}` are redundant because the inverse map already encodes the reverse direction. `new/*` deduplicates them via a private `dedup_inverse_pairs/1` (which side survives is undefined); `put/3` collapses them implicitly by deleting both `key` and `value` from the existing maps before inserting. Constructed InvMaps therefore never have `{a, b}` and `{b, a}` simultaneously in their internal maps.
+
 ### Custom `Inspect`
 
 `defimpl Inspect` renders an `InvMap` as `InvMap.new(%{...})` (showing only the forward map). This shape is what the doctests assert against, so changing it breaks doctests.
@@ -45,5 +47,5 @@ This split is intentional. Don't move validation into `put/3` or repair into `ne
 - **Outstanding TODOs in source:**
   - `fetch!/2` raise path lacks a non-doctest test.
   - The `Inspect` impl has a commented-out 1.19+-safer version using `Inspect.Algebra.to_doc_with_opts` that should eventually replace the current `to_doc` call.
-- **Probe cyclic inputs when changing lookup/mutation/validation.** Test with InvMaps whose internal maps include cyclic entries like `%{1 => 2, 2 => 1}` and `%{1 => 1, 2 => 2}` — values playing both forward-key and inverse-key roles are easy to miss.
+- **Probe identity pairs when changing lookup/mutation/validation.** Test with InvMaps containing entries like `%{1 => 1, 2 => 2}` — the value `1` plays both forward-key and inverse-key roles, which is easy to miss. The other classic case, `%{1 => 2, 2 => 1}`, is no longer reachable through `new/*` or `put/3` (it's collapsed to a single pair); reaching it requires direct struct construction, which the public API doesn't promise to handle.
 - **Regression tests go at the fix site.** Most public functions in this codebase compose over a smaller core. When a bug is fixed by changing function X, add one test on X — the smallest function that fails without the fix. Don't mirror the test across every caller; here, that's redundant coverage, not extra signal.

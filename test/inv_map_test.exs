@@ -27,6 +27,13 @@ defmodule InvMapTest do
       assert InvMap.new(a: 1, a: 2, a: 3) == expected
     end
 
+    test "deduplicates inverse pairs, but which remains is undefined" do
+      inv_map = InvMap.new([{1, 2}, {2, 1}])
+      assert map_size(inv_map.forward) == 1
+      assert InvMap.get(inv_map, 1) == 2
+      assert InvMap.get(inv_map, 2) == 1
+    end
+
     test "raises ArgumentError when enumerable is not self-inverting" do
       assert_raise ArgumentError, fn -> InvMap.new(%{1 => 2, 2 => 3}) end
       assert_raise ArgumentError, fn -> InvMap.new(%{a: 1, b: 1}) end
@@ -51,6 +58,13 @@ defmodule InvMapTest do
     test "the last key in wins" do
       expected = %InvMap{forward: %{:a => 6}, inverse: %{6 => :a}}
       assert InvMap.new([a: 1, a: 2, a: 3], fn {x, y} -> {x, y * 2} end) == expected
+    end
+
+    test "deduplicates inverse pairs, but which remains is undefined" do
+      inv_map = InvMap.new([{1, 4}, {2, 2}], fn {key, val} -> {key, div(val, 2)} end)
+      assert map_size(inv_map.forward) == 1
+      assert InvMap.get(inv_map, 1) == 2
+      assert InvMap.get(inv_map, 2) == 1
     end
 
     test "raises ArgumentError when transformed enumerable is not self-inverting" do
@@ -91,11 +105,6 @@ defmodule InvMapTest do
     test "returns inv_map unchanged if the key does not exist" do
       inv_map = InvMap.new(b: 2)
       assert InvMap.delete(inv_map, :a) == %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
-    end
-
-    test "deletes both entries when internal maps contain cyclic entries" do
-      inv_map = InvMap.new(%{1 => 2, 2 => 1, 3 => 4})
-      assert InvMap.delete(inv_map, 1) == %InvMap{forward: %{3 => 4}, inverse: %{4 => 3}}
     end
   end
 

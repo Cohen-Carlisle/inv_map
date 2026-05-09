@@ -20,12 +20,19 @@ defmodule InvMap do
 
   Duplicated keys are removed; the latest one prevails.
 
+  If the `enumerable` contains inverse pairs (e.g., `{1,2}` and `{2,1}`),
+  only one is kept. Which one is kept is undefined.
+
   ## Examples
 
       iex> InvMap.new(%{b: 1, a: 2})
       InvMap.new(%{a: 2, b: 1})
       iex> InvMap.new(a: 1, a: 2, a: 3)
       InvMap.new(%{a: 3})
+
+      # Inverse pairs are deduplicated. Which remains is undefined.
+      InvMap.new([{1, 2}, {2, 1}])
+      InvMap.new(%{1 => 2})
   """
   def new(enumerable)
   def new(%InvMap{} = inv_map), do: inv_map
@@ -41,12 +48,19 @@ defmodule InvMap do
 
   Duplicated keys are removed; the latest one prevails.
 
+  If the transformed `enumerable` contains inverse pairs (e.g., `{1,2}` and `{2,1}`),
+  only one is kept. Which one is kept is undefined.
+
   ## Examples
 
       iex> InvMap.new([1, 2], fn x -> {x, 100 * x + 1} end)
       InvMap.new(%{1 => 101, 2 => 201})
       iex> InvMap.new(%{a: 2, b: 3, c: 4}, fn {key, val} -> {key, val * 2} end)
       InvMap.new(%{a: 4, b: 6, c: 8})
+
+      # Inverse pairs are deduplicated. Which remains is undefined.
+      InvMap.new([{1, 4}, {2, 2}], fn {key, val} -> {key, div(val, 2)} end)
+      InvMap.new(%{1 => 2})
   """
   def new(enumerable, transform)
   def new(%InvMap{forward: forward}, transform), do: new(forward, transform)
@@ -58,9 +72,19 @@ defmodule InvMap do
   end
 
   defp new_from_map!(map) do
-    inverse = Map.new(map, fn {k, v} -> {v, k} end)
-    inv_map = %InvMap{forward: map, inverse: inverse}
+    forward = dedup_inverse_pairs(map)
+    inverse = Map.new(forward, fn {k, v} -> {v, k} end)
+    inv_map = %InvMap{forward: forward, inverse: inverse}
     validate_involution_on_get!(inv_map)
+  end
+
+  defp dedup_inverse_pairs(map) do
+    Enum.reduce(map, %{}, fn {k, v}, acc ->
+      case acc do
+        %{^v => ^k} -> acc
+        _ -> Map.put(acc, k, v)
+      end
+    end)
   end
 
   defp validate_involution_on_get!(%InvMap{forward: forward} = inv_map) do
@@ -191,26 +215,15 @@ defmodule InvMap do
       InvMap.new(%{b: 2})
   """
   def delete(%InvMap{} = inv_map, key) do
-    inv_map
-    |> maybe_delete_by_forward_key(key)
-    |> maybe_delete_by_inverse_key(key)
-  end
-
-  defp maybe_delete_by_forward_key(%{forward: forward} = inv_map, key) do
-    case forward do
-      %{^key => value} ->
+    case inv_map do
+      %{forward: %{^key => value} = forward} ->
         inverse = inv_map.inverse
         %InvMap{forward: Map.delete(forward, key), inverse: Map.delete(inverse, value)}
-      _ ->
-        inv_map
-    end
-  end
 
-  defp maybe_delete_by_inverse_key(%{inverse: inverse} = inv_map, key) do
-    case inverse do
-      %{^key => value} ->
+      %{inverse: %{^key => value} = inverse} ->
         forward = inv_map.forward
         %InvMap{forward: Map.delete(forward, value), inverse: Map.delete(inverse, key)}
+
       _ ->
         inv_map
     end
