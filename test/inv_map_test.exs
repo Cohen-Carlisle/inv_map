@@ -108,6 +108,34 @@ defmodule InvMapTest do
     end
   end
 
+  describe "equal?/2" do
+    test "returns true for InvMaps with the same pairs" do
+      assert InvMap.equal?(InvMap.new(a: 1, b: 2), InvMap.new(b: 2, a: 1)) == true
+    end
+
+    test "returns false for InvMaps with different pairs" do
+      assert InvMap.equal?(InvMap.new(a: 1, b: 2), InvMap.new(b: 1, a: 2)) == false
+    end
+
+    test "returns true for InvMaps with the same pairs in different directions" do
+      assert InvMap.equal?(InvMap.new(%{1 => 2}), InvMap.new(%{2 => 1})) == true
+    end
+
+    test "returns false when InvMaps differ in size (even if one is a subset)" do
+      assert InvMap.equal?(InvMap.new(a: 1), InvMap.new(a: 1, b: 2)) == false
+      assert InvMap.equal?(InvMap.new(a: 1, b: 2), InvMap.new(a: 1)) == false
+    end
+
+    test "returns false when one InvMap has a nil and the other is missing the key" do
+      assert InvMap.equal?(InvMap.new(a: nil), InvMap.new(b: nil)) == false
+    end
+
+    test "returns false when keys and values are not strictly equal" do
+      assert InvMap.equal?(InvMap.new(%{:one => 1}), InvMap.new(%{:one => 1.0})) == false
+      assert InvMap.equal?(InvMap.new(%{1 => :one}), InvMap.new(%{1.0 => :one})) == false
+    end
+  end
+
   describe "has_key?/2" do
     test "returns true if the key is present in the forward map" do
       assert InvMap.has_key?(InvMap.new(a: 1), :a) == true

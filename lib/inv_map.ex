@@ -243,6 +243,37 @@ defmodule InvMap do
   def drop(%InvMap{} = inv_map, [key | rest]), do: drop(delete(inv_map, key), rest)
 
   @doc """
+  Checks if two `InvMap`s are equal.
+
+  Two `InvMap`s are considered to be equal if they contain the same
+  key-value pairs, without respect to the direction of each pair.
+  In other words, pair `{k, v}` is considered equal to pair `{v, k}`.
+
+  Note this function returns different results than directly comparing
+  `InvMap`s using `==/2` and `===/2`. Those compare structure, meaning
+  `InvMap.new(%{1 => 2}) === InvMap.new(%{2 => 1})` returns `false`.
+
+  ## Examples
+
+      iex> InvMap.equal?(InvMap.new(a: 1, b: 2), InvMap.new(b: 2, a: 1))
+      true
+      iex> InvMap.equal?(InvMap.new(a: 1, b: 2), InvMap.new(b: 1, a: 2))
+      false
+      iex> InvMap.equal?(InvMap.new(%{1 => 2}), InvMap.new(%{2 => 1}))
+      true
+
+  Comparison between keys and values is done with strict equality,
+  which means integers are not equivalent to floats:
+
+      iex> InvMap.equal?(InvMap.new(a: 1.0), InvMap.new(a: 1))
+      false
+  """
+  def equal?(%InvMap{forward: forward1}, %InvMap{forward: forward2} = inv_map2) do
+    map_size(forward1) == map_size(forward2) and
+      Enum.all?(forward1, fn {k, v} -> match?({:ok, ^v}, fetch(inv_map2, k)) end)
+  end
+
+  @doc """
   Returns whether the given `key` exists in the given `inv_map`.
 
   ## Examples
