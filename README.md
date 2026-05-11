@@ -2,10 +2,10 @@
 
 A bidirectional `Map` for Elixir.
 
-`InvMap` mirrors the public API of the standard `Map` module, but its lookups
-are symmetric: `get(m, key)` and `get(m, value)` both return the counterpart.
-This is useful when the key-value relationship is 1-to-1 and you want lookups
-from both directions.
+`InvMap` mirrors the public API of the standard `Map` module (WIP), but its
+lookups are symmetric: `get(m, key)` and `get(m, value)` both return the
+counterpart. This is useful when the key-value relationship is 1-to-1 and you
+want lookups from both directions.
 
 ## Involution
 
