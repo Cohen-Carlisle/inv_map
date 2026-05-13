@@ -304,6 +304,58 @@ defmodule InvMap do
   """
   def to_list(%InvMap{forward: forward}), do: Map.to_list(forward)
 
+  @doc """
+  Returns an `InvMap` containing only those pairs from `inv_map`
+  for which `fun` returns a truthy value.
+
+  `fun` receives the key and value of each of the
+  elements in `inv_map` as a key-value pair.
+
+  See also `reject/2` which discards all elements where the
+  function returns a truthy value.
+
+  > #### Performance considerations {: .tip}
+  >
+  > If you find yourself doing multiple calls to `InvMap.filter/2`
+  > and/or `InvMap.reject/2` in a pipeline, it is likely more efficient
+  > to use `Enum.filter/2` and `Enum.reject/2` instead and convert to
+  > an `InvMap` at the end using `InvMap.new/1` or `InvMap.new/2`.
+
+  ## Examples
+
+      iex> InvMap.filter(InvMap.new(one: 1, two: 2), fn {_key, val} -> rem(val, 2) == 1 end)
+      InvMap.new(%{one: 1})
+  """
+  def filter(%InvMap{forward: forward}, fun) when is_function(fun, 1) do
+    forward
+    |> Map.filter(fun)
+    |> InvMap.new()
+  end
+
+  @doc """
+  Returns an `InvMap` excluding the pairs from `inv_map`
+  for which `fun` returns a truthy value.
+
+  See also `filter/2`.
+
+  > #### Performance considerations {: .tip}
+  >
+  > If you find yourself doing multiple calls to `InvMap.filter/2`
+  > and/or `InvMap.reject/2` in a pipeline, it is likely more efficient
+  > to use `Enum.filter/2` and `Enum.reject/2` instead and convert to
+  > an `InvMap` at the end using `InvMap.new/1` or `InvMap.new/2`.
+
+  ## Examples
+
+      iex> InvMap.reject(InvMap.new(one: 1, two: 2), fn {_key, val} -> rem(val, 2) == 1 end)
+      InvMap.new(%{two: 2})
+  """
+  def reject(%InvMap{forward: forward}, fun) when is_function(fun, 1) do
+    forward
+    |> Map.reject(fun)
+    |> InvMap.new()
+  end
+
   defimpl Inspect do
     def inspect(%InvMap{forward: forward}, %Inspect.Opts{} = opts) do
       # TODO: support for safer 1.19+ only inspect based on:

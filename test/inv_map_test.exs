@@ -156,4 +156,40 @@ defmodule InvMapTest do
       assert InvMap.to_list(InvMap.new(%{1 => 2})) == [{1, 2}]
     end
   end
+
+  describe "filter/2" do
+    test "returns an InvMap containing only pairs for which fun returns truthy" do
+      inv_map = InvMap.new(one: 1, two: 2)
+      expected = %InvMap{forward: %{one: 1}, inverse: %{1 => :one}}
+      assert InvMap.filter(inv_map, fn {_key, val} -> rem(val, 2) == 1 end) == expected
+    end
+
+    test "raises FunctionClauseError when fun arity is not 1" do
+      assert_raise FunctionClauseError, fn ->
+        InvMap.filter(InvMap.new(one: 1), fn _key, _val -> true end)
+      end
+
+      assert_raise FunctionClauseError, fn ->
+        InvMap.filter(InvMap.new(one: 1), fn -> true end)
+      end
+    end
+  end
+
+  describe "reject/2" do
+    test "returns an InvMap excluding pairs for which fun returns truthy" do
+      inv_map = InvMap.new(one: 1, two: 2)
+      expected = %InvMap{forward: %{two: 2}, inverse: %{2 => :two}}
+      assert InvMap.reject(inv_map, fn {_key, val} -> rem(val, 2) == 1 end) == expected
+    end
+
+    test "raises FunctionClauseError when fun arity is not 1" do
+      assert_raise FunctionClauseError, fn ->
+        InvMap.reject(InvMap.new(one: 1), fn _key, _val -> true end)
+      end
+
+      assert_raise FunctionClauseError, fn ->
+        InvMap.reject(InvMap.new(one: 1), fn -> true end)
+      end
+    end
+  end
 end
