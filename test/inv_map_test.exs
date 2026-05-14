@@ -128,6 +128,33 @@ defmodule InvMapTest do
     end
   end
 
+  describe "update/4" do
+    test "updates the value when the key is in the forward map" do
+      expected = %InvMap{forward: %{one: "1"}, inverse: %{"1" => :one}}
+      assert InvMap.update(InvMap.new(one: 1), :one, "miss", &to_string/1) == expected
+    end
+
+    test "updates the value when the key is in the inverse map" do
+      expected = %InvMap{forward: %{1 => "one"}, inverse: %{"one" => 1}}
+      assert InvMap.update(InvMap.new(one: 1), 1, "miss", &to_string/1) == expected
+    end
+
+    test "inserts default when the key is not present" do
+      expected = %InvMap{forward: %{one: 1, two: "miss"}, inverse: %{1 => :one, "miss" => :two}}
+      assert InvMap.update(InvMap.new(one: 1), :two, "miss", &to_string/1) == expected
+    end
+
+    test "raises FunctionClauseError when fun arity is not 1" do
+      assert_raise FunctionClauseError, fn ->
+        InvMap.update(InvMap.new(one: 1), :one, "miss", fn -> :oops end)
+      end
+
+      assert_raise FunctionClauseError, fn ->
+        InvMap.update(InvMap.new(one: 1), :one, "miss", fn _, _ -> :oops end)
+      end
+    end
+  end
+
   describe "delete/2" do
     test "deletes the entry from the forward map" do
       inv_map = InvMap.new(a: 1, b: 2)
