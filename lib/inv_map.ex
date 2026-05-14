@@ -186,7 +186,6 @@ defmodule InvMap do
       ** (KeyError) key :b not found in:...
   """
   def fetch!(%InvMap{} = inv_map, key) do
-    # TODO: fully test raise in ...test.exs
     case fetch(inv_map, key) do
       {:ok, value} -> value
       :error -> raise KeyError, key: key, term: inv_map

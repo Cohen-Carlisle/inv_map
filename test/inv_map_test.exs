@@ -95,6 +95,36 @@ defmodule InvMapTest do
     end
   end
 
+  describe "fetch/2" do
+    test "returns {:ok, value} for a key in either direction" do
+      inv_map = InvMap.new(a: 1)
+      assert InvMap.fetch(inv_map, :a) == {:ok, 1}
+      assert InvMap.fetch(inv_map, 1) == {:ok, :a}
+    end
+
+    test "returns :error when the key is not present" do
+      assert InvMap.fetch(InvMap.new(a: 1), :b) == :error
+    end
+
+    test "returns {:ok, nil} when the value is nil" do
+      assert InvMap.fetch(InvMap.new(a: nil), :a) == {:ok, nil}
+    end
+  end
+
+  describe "fetch!/2" do
+    test "returns the value for a key in either direction" do
+      inv_map = InvMap.new(a: 1)
+      assert InvMap.fetch!(inv_map, :a) == 1
+      assert InvMap.fetch!(inv_map, 1) == :a
+    end
+
+    test "raises KeyError when the key is not present" do
+      assert_raise KeyError, ~r/key :b not found in:/, fn ->
+        InvMap.fetch!(InvMap.new(a: 1), :b)
+      end
+    end
+  end
+
   describe "get/3" do
     test "returns the value of key in inv_map, else default" do
       inv_map = InvMap.new()
@@ -197,6 +227,14 @@ defmodule InvMapTest do
     test "returns inv_map unchanged if the key does not exist" do
       inv_map = InvMap.new(b: 2)
       assert InvMap.delete(inv_map, :a) == %InvMap{forward: %{:b => 2}, inverse: %{2 => :b}}
+    end
+  end
+
+  describe "drop/2" do
+    test "drops the given keys from inv_map" do
+      inv_map = InvMap.new(a: 1, b: 2, c: 3)
+      expected = %InvMap{forward: %{a: 1}, inverse: %{1 => :a}}
+      assert InvMap.drop(inv_map, [:b, 3, :d]) == expected
     end
   end
 
