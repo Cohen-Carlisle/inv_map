@@ -201,6 +201,36 @@ defmodule InvMap do
   end
 
   @doc """
+  Gets the value for a specific `key` in `inv_map`.
+
+  If `key` is present in `inv_map` then its value is returned.
+  Otherwise, `fun` is evaluated and its result is returned.
+
+  This is useful if the default value is very expensive to calculate or
+  generally difficult to setup and teardown again.
+
+  ## Examples
+
+      iex> inv_map = InvMap.new(a: 1)
+      iex> fun = fn ->
+      ...>   # some expensive operation here
+      ...>   "fun invoked"
+      ...> end
+      iex> InvMap.get_lazy(inv_map, :a, fun)
+      1
+      iex> InvMap.get_lazy(inv_map, 1, fun)
+      :a
+      iex> InvMap.get_lazy(inv_map, "missing", fun)
+      "fun invoked"
+  """
+  def get_lazy(%InvMap{} = inv_map, key, fun) when is_function(fun, 0) do
+    case fetch(inv_map, key) do
+      {:ok, value} -> value
+      :error -> fun.()
+    end
+  end
+
+  @doc """
   Deletes the entry in `inv_map` for a specific `key`.
 
   If the `key` does not exist, returns `inv_map` unchanged.

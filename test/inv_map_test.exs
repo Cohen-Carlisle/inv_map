@@ -91,6 +91,28 @@ defmodule InvMapTest do
     end
   end
 
+  describe "get_lazy/3" do
+    test "returns the value of key in inv_map, else invokes fun" do
+      inv_map = InvMap.new(a: 1)
+      fun = fn -> send(self(), "fun invoked") end
+
+      assert InvMap.get_lazy(inv_map, :a, fun) == 1
+      refute_received "fun invoked"
+
+      assert InvMap.get_lazy(inv_map, 1, fun) == :a
+      refute_received "fun invoked"
+
+      assert InvMap.get_lazy(inv_map, "missing", fun) == "fun invoked"
+      assert_received "fun invoked"
+    end
+
+    test "raises FunctionClauseError when fun arity is not 0" do
+      assert_raise FunctionClauseError, fn ->
+        InvMap.get_lazy(InvMap.new(a: 1), :a, fn _ -> 1 end)
+      end
+    end
+  end
+
   describe "delete/2" do
     test "deletes the entry from the forward map" do
       inv_map = InvMap.new(a: 1, b: 2)
