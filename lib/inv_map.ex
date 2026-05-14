@@ -276,6 +276,27 @@ defmodule InvMap do
   end
 
   @doc """
+  Updates `key` with the given function.
+
+  If `key` is present in `inv_map` then the existing value is passed to `fun` and its result is
+  used as the updated value of `key`. If `key` is
+  not present in `inv_map`, a `KeyError` exception is raised.
+
+  ## Examples
+
+      iex> InvMap.update!(InvMap.new(one: 1), :one, fn value -> to_string(value) end)
+      InvMap.new(%{one: "1"})
+      iex> InvMap.update!(InvMap.new(one: 1), 1, fn value -> to_string(value) end)
+      InvMap.new(%{1 => "one"})
+      iex> InvMap.update!(InvMap.new(one: 1), :two, fn value -> to_string(value) end)
+      ** (KeyError) key :two not found in:...
+  """
+  def update!(%InvMap{} = inv_map, key, fun) when is_function(fun, 1) do
+    value = fetch!(inv_map, key)
+    put(inv_map, key, fun.(value))
+  end
+
+  @doc """
   Deletes the entry in `inv_map` for a specific `key`.
 
   If the `key` does not exist, returns `inv_map` unchanged.
