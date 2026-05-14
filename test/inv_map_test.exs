@@ -80,6 +80,21 @@ defmodule InvMapTest do
     end
   end
 
+  describe "put_new/3" do
+    test "puts the key value pair in inv_map if the key is not already present" do
+      expected = %InvMap{forward: %{a: 1, b: 2}, inverse: %{1 => :a, 2 => :b}}
+      assert InvMap.put_new(InvMap.new(a: 1), :b, 2) == expected
+    end
+
+    test "returns inv_map unchanged if the key or value is already present" do
+      inv_map = InvMap.new(a: 1, b: 2)
+      assert InvMap.put_new(inv_map, :a, 3) == inv_map
+      assert InvMap.put_new(inv_map, 3, :a) == inv_map
+      assert InvMap.put_new(inv_map, :c, 1) == inv_map
+      assert InvMap.put_new(inv_map, 1, :c) == inv_map
+    end
+  end
+
   describe "get/3" do
     test "returns the value of key in inv_map, else default" do
       inv_map = InvMap.new()

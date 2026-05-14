@@ -121,6 +121,27 @@ defmodule InvMap do
   end
 
   @doc """
+  Puts the given key-value pair into `inv_map` unless
+  `key` or `value` already exists in `inv_map`.
+
+  ## Examples
+
+      iex> InvMap.put_new(InvMap.new(a: 1), :b, 2)
+      InvMap.new(%{a: 1, b: 2})
+      iex> InvMap.put_new(InvMap.new(a: 1, b: 2), :a, 3)
+      InvMap.new(%{a: 1, b: 2})
+      iex> InvMap.put_new(InvMap.new(a: 1, b: 2), :c, 1)
+      InvMap.new(%{a: 1, b: 2})
+  """
+  def put_new(%InvMap{} = inv_map, key, value) do
+    if has_key?(inv_map, key) or has_key?(inv_map, value) do
+      inv_map
+    else
+      put(inv_map, key, value)
+    end
+  end
+
+  @doc """
   Fetches the value for a specific `key` in the given `inv_map`.
 
   If `inv_map` contains the given `key` then its value is returned in the shape of `{:ok, value}`.
