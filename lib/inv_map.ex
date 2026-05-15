@@ -451,6 +451,34 @@ defmodule InvMap do
     |> InvMap.new()
   end
 
+  @doc """
+  Returns a new `InvMap` containing only the entries from `inv_map` with the given `keys`.
+
+  If `keys` contains keys that are not in `inv_map`, they're simply ignored.
+
+  ## Examples
+
+      iex> InvMap.take(InvMap.new(a: 1, b: 2, c: 3), [:b, 3, :d])
+      InvMap.new(%{:b => 2, 3 => :c})
+  """
+  def take(%InvMap{} = inv_map, keys) when is_list(keys) do
+    do_take(inv_map, keys, [])
+  end
+
+  defp do_take(_, [], acc) do
+    new(acc)
+  end
+
+  defp do_take(inv_map, [key | rest], acc) do
+    new_acc =
+      case fetch(inv_map, key) do
+        {:ok, value} -> [{key, value} | acc]
+        :error -> acc
+      end
+
+    do_take(inv_map, rest, new_acc)
+  end
+
   defimpl Inspect do
     def inspect(%InvMap{forward: forward}, %Inspect.Opts{} = opts) do
       # TODO: support for safer 1.19+ only inspect based on:

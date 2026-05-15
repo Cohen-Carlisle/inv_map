@@ -322,4 +322,18 @@ defmodule InvMapTest do
       end
     end
   end
+
+  describe "take/2" do
+    test "takes the entries with the given keys from inv_map" do
+      inv_map = InvMap.new(a: 1, b: 2, c: 3)
+      expected = %InvMap{forward: %{:b => 2, 3 => :c}, inverse: %{2 => :b, :c => 3}}
+      assert InvMap.take(inv_map, [:b, 3, :d]) == expected
+    end
+
+    test "raises FunctionClauseError when keys is not a list" do
+      assert_raise FunctionClauseError, fn ->
+        InvMap.take(InvMap.new(a: 1), :a)
+      end
+    end
+  end
 end
